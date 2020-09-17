@@ -2,26 +2,14 @@
 
 namespace Supermarket\Model;
 
-class Offer
+interface Offer
 {
-    private Product $product;
-    private SpecialOfferType $offerType;
-    private float $argument;
+    /**
+     * @param float   $quantity
+     * @param float   $unitPrice
+     * @return float
+     */
+    public function getDiscount(float $quantity, float $unitPrice): float;
 
-    public function __construct(SpecialOfferType $offerType, Product $product, float $argument)
-    {
-        $this->offerType = $offerType;
-        $this->product = $product;
-        $this->argument = $argument;
-    }
-
-    public function getArgument(): float
-    {
-        return $this->argument;
-    }
-
-    public function getOfferType(): SpecialOfferType
-    {
-        return $this->offerType;
-    }
+    public function getDescription(): string;
 }

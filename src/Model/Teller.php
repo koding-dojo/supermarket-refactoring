@@ -8,7 +8,7 @@ class Teller
 {
     private SupermarketCatalog $catalog;
 
-    /** @var Map [Product => Offer] */
+    /** @var Map<Product, Offer> */
     private Map $offers;
 
     public function __construct(SupermarketCatalog $catalog)
@@ -17,9 +17,9 @@ class Teller
         $this->offers = new Map();
     }
 
-    public function addSpecialOffer(SpecialOfferType $offerType, Product $product, float $argument)
+    public function addOffer(Product $product, Offer $offer)
     {
-        $this->offers[$product] = new Offer($offerType, $product, $argument);
+        $this->offers[$product] = $offer;
     }
 
     public function checkoutArticlesFrom(ShoppingCart $cart): Receipt
@@ -27,14 +27,28 @@ class Teller
         $receipt = new Receipt();
         $productQuantities = $cart->getItems();
         foreach ($productQuantities as $pq) {
-            $p = $pq->getProduct();
+            $product = $pq->getProduct();
             $quantity = $pq->getQuantity();
-            $unitPrice = $this->catalog->getUnitPrice($p);
+            $unitPrice = $this->catalog->getUnitPrice($product);
             $price = $quantity * $unitPrice;
-            $receipt->addProduct($p, $quantity, $unitPrice, $price);
+            $receipt->addProduct($product, $quantity, $unitPrice, $price);
         }
 
-        $cart->handleOffers($receipt, $this->offers, $this->catalog);
+        /**
+         * @var Product $product
+         * @var float $productQuantity
+         */
+        foreach ($cart->getProductQuantities() as $product => $quantity) {
+            if ($this->offers->hasKey($product)) {
+                /** @var Offer $offer */
+                $offer = $this->offers[$product];
+                $unitPrice = $this->catalog->getUnitPrice($product);
+                $discount = $offer->getDiscount($quantity, $unitPrice);
+                if ($discount) {
+                    $receipt->addDiscount(new Discount($product, $offer->getDescription(), $discount));
+                }
+            }
+        }
 
         return $receipt;
     }

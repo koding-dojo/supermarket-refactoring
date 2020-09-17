@@ -9,7 +9,7 @@ use Supermarket\Model\{
     ProductUnit
 };
 
-class ReceiptPrinter
+class ReceiptPrinter implements Printer
 {
     private int $columns;
 
